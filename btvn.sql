@@ -1,59 +1,55 @@
-CREATE DATABASE miniproject;
-USE miniproject;
+
+CREATE DATABASE IF NOT EXISTS f1_championship;
+USE f1_championship;
 
 -- BẢNG 1: teams (Đội đua)
 CREATE TABLE teams (
-    team_id INT AUTO_INCREMENT,
+    team_id INT AUTO_INCREMENT PRIMARY KEY,
     team_name VARCHAR(100) NOT NULL,
     hq_country VARCHAR(50) NOT NULL,
     budget_cap DECIMAL(15,2) NOT NULL,
-    current_rank INT DEFAULT 0,
-    CONSTRAINT PK_teams PRIMARY KEY (team_id)
+    current_rank INT DEFAULT 0
 );
 
 -- BẢNG 2: drivers (Tay đua)
 CREATE TABLE drivers (
-    driver_id INT AUTO_INCREMENT,
+    driver_id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
     driver_number INT NOT NULL,
     nationality VARCHAR(50) NOT NULL,
     annual_salary DECIMAL(12,2) NOT NULL,
     team_id INT,
-    CONSTRAINT PK_drivers PRIMARY KEY (driver_id),
     CONSTRAINT UQ_driver_number UNIQUE (driver_number),
     CONSTRAINT FK_drivers_teams FOREIGN KEY (team_id) REFERENCES teams(team_id)
 );
 
 -- BẢNG 3: constructors_championship (Giải đội đua)
 CREATE TABLE constructors_championship (
-    championship_id INT AUTO_INCREMENT,
+    championship_id INT AUTO_INCREMENT PRIMARY KEY,
     season_year YEAR NOT NULL,
     team_id INT,
     total_points DECIMAL(5,1) DEFAULT 0.0,
-    CONSTRAINT PK_constructors_championship PRIMARY KEY (championship_id),
     CONSTRAINT FK_constructors_teams FOREIGN KEY (team_id) REFERENCES teams(team_id)
 );
 
 -- BẢNG 4: races (Chặng đua)
 CREATE TABLE races (
-    race_id INT AUTO_INCREMENT,
+    race_id INT AUTO_INCREMENT PRIMARY KEY,
     race_name VARCHAR(100) NOT NULL,
     circuit_name VARCHAR(100) NOT NULL,
     race_date DATETIME NOT NULL,
-    race_status VARCHAR(30) DEFAULT 'Scheduled',
-    CONSTRAINT PK_races PRIMARY KEY (race_id)
+    race_status VARCHAR(30) DEFAULT 'Scheduled'
 );
 
 -- BẢNG 5: race_results (Kết quả chặng đua)
 CREATE TABLE race_results (
-    result_id INT AUTO_INCREMENT,
+    result_id INT AUTO_INCREMENT PRIMARY KEY,
     driver_id INT,
     race_id INT,
     grid_position INT NOT NULL,
-    finish_position INT NULL, 
+    finish_position INT NULL, -- NULL nếu bỏ cuộc DNF
     points_earned DECIMAL(4,1) DEFAULT 0.0,
     fastest_lap_speed DECIMAL(5,2) DEFAULT 0.00,
-    CONSTRAINT PK_race_results PRIMARY KEY (result_id),
     CONSTRAINT FK_results_drivers FOREIGN KEY (driver_id) REFERENCES drivers(driver_id),
     CONSTRAINT FK_results_races FOREIGN KEY (race_id) REFERENCES races(race_id)
 );
@@ -93,13 +89,12 @@ INSERT INTO races (race_name, circuit_name, race_date, race_status) VALUES
 -- 5. Chèn dữ liệu vào bảng race_results (Mô phỏng chặng Bahrain và Suzuka)
 INSERT INTO race_results (driver_id, race_id, grid_position, finish_position, points_earned, fastest_lap_speed) VALUES
 -- Chặng 1: Bahrain GP
-(1, 1, 1, 1, 26.0, 242.50),
-(2, 1, 3, 2, 18.0, 238.20), 
-(4, 1, 2, 3, 15.0, 239.10), 
-(3, 1, 4, 21, 0.0, 230.40),  
-(5, 1, 5, NULL, 0.0, 0.00),   
+(1, 1, 1, 1, 26.0, 242.50), -- Max thắng + fastest lap
+(2, 1, 3, 2, 18.0, 238.20), -- Lewis về nhì
+(4, 1, 2, 3, 15.0, 239.10), -- Lando về ba
+(3, 1, 4, 21, 0.0, 230.40),  -- Charles bị lỗi/phạt vị trí > 20
+(5, 1, 5, NULL, 0.0, 0.00),   -- Alonso DNF
 -- Chặng 4: Suzuka GP
 (1, 4, 1, 2, 18.0, 235.10),
-(4, 4, 3, 1, 25.0, 241.80), 
-(2, 4, 2, 4, 12.0, 236.40),
-(3, 4, 4, 3, 15.0, 237.90);
+(4, 4, 3, 1, 25.0, 241.80), -- Lando thắng chặng
+(2, 4, 2, 4, 12.0, 236.40);
